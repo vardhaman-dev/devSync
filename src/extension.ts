@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Command: Fetch GitHub Repository Files
+  // Command: Fetch GitHub Repository & Edit
   context.subscriptions.push(
     vscode.commands.registerCommand("my-integrated-extension.fetchGitHubRepo", async () => {
       const repoInput = await vscode.window.showInputBox({
@@ -48,7 +48,24 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
       const [owner, repo] = parts;
+      // First, fetch the repository details.
       await githubService.fetchRepo(owner, repo);
+      // Then, ask if user wants to clone & open the repo.
+      const cloneChoice = await vscode.window.showQuickPick(["Yes", "No"], {
+        placeHolder: "Do you want to clone and open this repository for editing?"
+      });
+      if (cloneChoice === "Yes") {
+        // Ask for target directory to clone into
+        const folderUri = await vscode.window.showOpenDialog({
+          canSelectFolders: true,
+          openLabel: "Select Folder to Clone Repository Into"
+        });
+        if (!folderUri || folderUri.length === 0) {
+          vscode.window.showErrorMessage("No folder selected.");
+          return;
+        }
+        await githubService.cloneRepo(owner, repo, folderUri[0].fsPath);
+      }
     })
   );
 

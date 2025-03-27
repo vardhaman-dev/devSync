@@ -22,11 +22,8 @@ export class DependencyVisualizer {
       vscode.window.showErrorMessage("No workspace folder is open.");
       return;
     }
-
-    // Build the folder graph data from the workspace root.
     const graphData = this.buildFolderGraph(workspaceRoot);
     const dataString = JSON.stringify(graphData);
-
     const panel = vscode.window.createWebviewPanel(
       "dependencyViz",
       "Dependency Visualization",
@@ -36,10 +33,6 @@ export class DependencyVisualizer {
     panel.webview.html = this.getWebviewContent(dataString);
   }
 
-  /**
-   * Recursively traverse the folder structure starting from root,
-   * building nodes and links for the graph.
-   */
   private buildFolderGraph(root: string): { nodes: GraphNode[]; links: GraphLink[] } {
     const nodes: GraphNode[] = [];
     const links: GraphLink[] = [];
@@ -48,8 +41,7 @@ export class DependencyVisualizer {
     function traverse(currentPath: string, parentId: number | null): number {
       const name = path.basename(currentPath);
       const id = idCounter++;
-      const node: GraphNode = { id, name, fullPath: currentPath };
-      nodes.push(node);
+      nodes.push({ id, name, fullPath: currentPath });
       if (parentId !== null) {
         links.push({ source: parentId, target: id });
       }
@@ -63,7 +55,7 @@ export class DependencyVisualizer {
           }
         }
       } catch (err) {
-        // Ignore permission errors or other issues.
+        // Ignore errors (permissions, etc.)
       }
       return id;
     }
@@ -73,7 +65,6 @@ export class DependencyVisualizer {
   }
 
   private getWebviewContent(dataString: string): string {
-    // The webview content loads D3.js from CDN and draws a force-directed graph using the provided data.
     return `
       <!DOCTYPE html>
       <html lang="en">
@@ -93,21 +84,21 @@ export class DependencyVisualizer {
         <svg id="graph"></svg>
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script>
-          const graphData = ${dataString};
+          const data = ${dataString};
 
           const svg = d3.select("#graph"),
                 width = +svg.node().getBoundingClientRect().width,
                 height = +svg.node().getBoundingClientRect().height;
 
-          const simulation = d3.forceSimulation(graphData.nodes)
-            .force("link", d3.forceLink(graphData.links).id(d => d.id).distance(50))
+          const simulation = d3.forceSimulation(data.nodes)
+            .force("link", d3.forceLink(data.links).id(d => d.id).distance(50))
             .force("charge", d3.forceManyBody().strength(-200))
             .force("center", d3.forceCenter(width / 2, height / 2));
 
           const link = svg.append("g")
               .attr("class", "links")
             .selectAll("line")
-            .data(graphData.links)
+            .data(data.links)
             .join("line")
               .attr("class", "link")
               .attr("stroke-width", 1.5);
@@ -115,7 +106,7 @@ export class DependencyVisualizer {
           const node = svg.append("g")
               .attr("class", "nodes")
             .selectAll("g")
-            .data(graphData.nodes)
+            .data(data.nodes)
             .join("g")
               .call(drag(simulation));
 

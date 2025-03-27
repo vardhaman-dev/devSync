@@ -1,7 +1,7 @@
 {
   "name": "my-integrated-extension",
   "displayName": "My Integrated Extension",
-  "description": "Integrated extension enhancing software development: SRS-to-Code Mapping, Intelligent Navigation, Guided Onboarding, AI Insights, and Dependency Visualization.",
+  "description": "PS8: Integrated extension that enhances software development by mapping SRS to code, offering guided onboarding, AI insights, and visualizations.",
   "version": "1.0.0",
   "engines": {
     "vscode": "^1.98.0"
@@ -31,7 +31,7 @@
       },
       {
         "command": "my-integrated-extension.fetchGitHubRepo",
-        "title": "Fetch GitHub Repository Files"
+        "title": "Fetch GitHub Repository & Edit"
       },
       {
         "command": "my-integrated-extension.startCodeTour",

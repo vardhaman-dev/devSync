@@ -26,13 +26,22 @@ export class DocumentationPanel {
   }
 
   private getWebviewContent(): string {
-    // Load documentation from a file if it exists
-    const docPath = path.join(this.context.extensionPath, "DOCUMENTATION.md");
+    // First, try to read DOCUMENTATION.md from the workspace folder.
     let markdownContent = "";
-    if (fs.existsSync(docPath)) {
-      markdownContent = fs.readFileSync(docPath, "utf8");
-    } else {
-      markdownContent = `
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders && workspaceFolders.length > 0) {
+      const docPath = path.join(workspaceFolders[0].uri.fsPath, "DOCUMENTATION.md");
+      if (fs.existsSync(docPath)) {
+        markdownContent = fs.readFileSync(docPath, "utf8");
+      }
+    }
+    // If not found, fallback to default documentation from extension folder.
+    if (!markdownContent) {
+      const defaultDocPath = path.join(this.context.extensionPath, "DOCUMENTATION.md");
+      if (fs.existsSync(defaultDocPath)) {
+        markdownContent = fs.readFileSync(defaultDocPath, "utf8");
+      } else {
+        markdownContent = `
 # PS8 Documentation
 
 Welcome to the **PS8 Project Development & Assistance Platform**.
@@ -44,11 +53,12 @@ Welcome to the **PS8 Project Development & Assistance Platform**.
 - **Guided Onboarding:** Start guided tours with CodeTour.
 - **AI-powered Insights:** Trigger AI insights via your cline extension.
 - **Dependency Visualization:** Graphically view module dependencies.
-      `;
+        `;
+      }
     }
     const md = new MarkdownIt();
     const htmlFromMd = md.render(markdownContent);
-    const htmlContent = `
+    return `
       <!DOCTYPE html>
       <html lang="en">
       <head>
@@ -65,6 +75,5 @@ Welcome to the **PS8 Project Development & Assistance Platform**.
       </body>
       </html>
     `;
-    return htmlContent;
   }
 }
