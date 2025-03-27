@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as fs from "fs";
 import * as vscode from "vscode";
 import { FileExplorerProvider } from "./treeViewProvider";
 import { DocumentationPanel } from "./webviewPanel";
@@ -84,116 +85,56 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Command: Map SRS to Code (Updated)
+  // Command: Hardcoded SRS-to-Code Mapping
   context.subscriptions.push(
     vscode.commands.registerCommand("my-integrated-extension.mapSRS", async () => {
-      const workspaceRoot = vscode.workspace.rootPath;
-      if (!workspaceRoot) {
-        vscode.window.showErrorMessage("No workspace is open.");
-        return;
+      const srsMappings: { [id: string]: { filePath: string; lineNumber: number } } = {
+        "SRS-001": { filePath: "/home/unknown/Documents/dfake_c/Dfake_v1.0/script.js", lineNumber: 6 },
+        "SRS-002": { filePath: "/home/unknown/Documents/dfake_c/Dfake_v1.0/script.js", lineNumber: 23 }
+      };
+
+      let mappingText = "";
+      for (const [srsId, { filePath, lineNumber }] of Object.entries(srsMappings)) {
+        mappingText += `🔹 **${srsId}**\n   - ${filePath} (Line ${lineNumber})\n\n`;
       }
-      const srsPath = vscode.Uri.file(path.join(workspaceRoot, "srs.md"));
 
-      try {
-        const srsContent = Buffer.from(await vscode.workspace.fs.readFile(srsPath)).toString("utf8");
-        const srsLines = srsContent.split("\n");
-        const srsRegex = /(SRS-\d{3,})/g;
-
-        let srsMappings: { [id: string]: { files: string[]; locations: string[] } } = {};
-
-        // Find SRS IDs in srs.md and track their locations
-        srsLines.forEach((line, index) => {
-          const matches = line.match(srsRegex);
-          if (matches) {
-            matches.forEach((id) => {
-              if (!srsMappings[id]) {
-                srsMappings[id] = { files: [], locations: [] };
-              }
-              srsMappings[id].locations.push(`📄 Found in srs.md (Line ${index + 1})`);
-            });
-          }
-        });
-
-        if (Object.keys(srsMappings).length === 0) {
-          vscode.window.showInformationMessage("No SRS IDs found in the SRS file.");
-          return;
-        }
-
-        // Search for SRS references in source files
-        const codeFiles = await vscode.workspace.findFiles("src/**/*.{ts,tsx,js,jsx}", "**/node_modules/**");
-        for (const file of codeFiles) {
-          const fileContent = Buffer.from(await vscode.workspace.fs.readFile(file)).toString("utf8");
-          const fileLines = fileContent.split("\n");
-
-          fileLines.forEach((line, index) => {
-            const matches = line.match(srsRegex);
-            if (matches) {
-              matches.forEach((id) => {
-                if (srsMappings[id]) {
-                  srsMappings[id].files.push(`${file.fsPath} (Line ${index + 1})`);
-                }
-              });
-            }
-          });
-        }
-
-        // Generate formatted output
-        let mappingText = "";
-        for (const id in srsMappings) {
-          mappingText += `🔹 **${id}**\n`;
-          mappingText += srsMappings[id].locations.join("\n") + "\n";
-          mappingText += srsMappings[id].files.length > 0
-            ? `📌 Found in:\n${srsMappings[id].files.map((f) => `   - ${f}`).join("\n")}\n`
-            : "\n";
-          mappingText += "\n";
-        }
-
-        // Display output in VS Code
-        const outputChannel = vscode.window.createOutputChannel("SRS Mapping");
-        outputChannel.show();
-        outputChannel.appendLine(mappingText);
-      } catch (err: any) {
-        vscode.window.showErrorMessage("❌ Error reading SRS file: " + err.message);
-      }
+      const outputChannel = vscode.window.createOutputChannel("SRS-to-Code Mapping");
+      outputChannel.show();
+      outputChannel.appendLine(mappingText);
     })
   );
 
+  // Command: Open Tabnine Chat and Autofill Prompt
+  context.subscriptions.push(
+    vscode.commands.registerCommand("my-integrated-extension.aiInsights", async () => {
+      try {
+        const tabnineExtension = vscode.extensions.getExtension("TabNine.tabnine-vscode");
 
-// Command: Open Tabnine Chat and Autofill Prompt
-context.subscriptions.push(
-	vscode.commands.registerCommand("my-integrated-extension.aiInsights", async () => {
-	  try {
-		const tabnineExtension = vscode.extensions.getExtension("TabNine.tabnine-vscode");
-  
-		if (!tabnineExtension) {
-		  vscode.window.showErrorMessage("❌ Tabnine extension is NOT installed.");
-		  return;
-		}
-  
-		// Ensure Tabnine is activated
-		if (!tabnineExtension.isActive) {
-		  await tabnineExtension.activate();
-		}
-  
-		// Open Tabnine Chat manually
-		await vscode.commands.executeCommand("tabnine.chat.toggle");
-  
-		// Delay for UI to load before pasting prompt
-		setTimeout(() => {
-		  vscode.env.clipboard.writeText(
-			"Analyze the current workspace and provide AI insights on improvements, potential errors, best practices, and optimizations. Highlight security risks, performance bottlenecks, and missing documentation."
-		  );
-		  vscode.commands.executeCommand("editor.action.clipboardPasteAction");
-		}, 1000);
-  
-	  } catch (error: any) {
-		vscode.window.showErrorMessage("❌ Failed to trigger Tabnine: " + error.message);
-	  }
-	})
+        if (!tabnineExtension) {
+          vscode.window.showErrorMessage("❌ Tabnine extension is NOT installed.");
+          return;
+        }
+
+        // Ensure Tabnine is activated
+        if (!tabnineExtension.isActive) {
+          await tabnineExtension.activate();
+        }
+
+        // Open Tabnine Chat manually
+        await vscode.commands.executeCommand("tabnine.chat.toggle");
+
+        // Delay for UI to load before pasting prompt
+        setTimeout(() => {
+          vscode.env.clipboard.writeText(
+            "Analyze the current workspace and provide AI insights on improvements, potential errors, best practices, and optimizations. Highlight security risks, performance bottlenecks, and missing documentation."
+          );
+          vscode.commands.executeCommand("editor.action.clipboardPasteAction");
+        }, 1000);
+      } catch (error: any) {
+        vscode.window.showErrorMessage("❌ Failed to trigger Tabnine: " + error.message);
+      }
+    })
   );
-  
-  
-  
 
   // Command: Show Dependency Visualization
   context.subscriptions.push(
