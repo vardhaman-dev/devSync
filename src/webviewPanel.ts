@@ -8,53 +8,53 @@ export class DocumentationPanel {
 
   constructor(private context: vscode.ExtensionContext) {}
 
-  show() {
+  async show() {
     if (this.panel) {
       this.panel.reveal(vscode.ViewColumn.One);
-      return;
+    } else {
+      this.panel = vscode.window.createWebviewPanel(
+        "ps8Docs",
+        "PS8 Documentation",
+        vscode.ViewColumn.One,
+        { enableScripts: true }
+      );
+      this.panel.onDidDispose(() => {
+        this.panel = undefined;
+      });
+      this.panel.webview.html = await this.getWebviewContent();
     }
-    this.panel = vscode.window.createWebviewPanel(
-      "ps8Docs",
-      "PS8 Documentation",
-      vscode.ViewColumn.One,
-      { enableScripts: true }
-    );
-    this.panel.webview.html = this.getWebviewContent();
-    this.panel.onDidDispose(() => {
-      this.panel = undefined;
-    });
   }
 
-  private getWebviewContent(): string {
-    // First, try to read DOCUMENTATION.md from the workspace folder.
+  private async getWebviewContent(): Promise<string> {
     let markdownContent = "";
+    // Search recursively for any .md file in the workspace folder
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (workspaceFolders && workspaceFolders.length > 0) {
-      const docPath = path.join(workspaceFolders[0].uri.fsPath, "DOCUMENTATION.md");
-      if (fs.existsSync(docPath)) {
-        markdownContent = fs.readFileSync(docPath, "utf8");
+      // Use a recursive search pattern to catch all .md files in the workspace
+      const files = await vscode.workspace.findFiles("**/*.md", "**/node_modules/**", 10);
+      if (files.length === 1) {
+        markdownContent = fs.readFileSync(files[0].fsPath, "utf8");
+      } else if (files.length > 1) {
+        // If multiple markdown files are found, prompt the user to select one.
+        const fileNames = files.map(f => path.basename(f.fsPath));
+        const selectedFile = await vscode.window.showQuickPick(fileNames, {
+          placeHolder: "Select a markdown file to display as documentation"
+        });
+        if (selectedFile) {
+          const selectedUri = files.find(f => path.basename(f.fsPath) === selectedFile);
+          if (selectedUri) {
+            markdownContent = fs.readFileSync(selectedUri.fsPath, "utf8");
+          }
+        }
       }
     }
-    // If not found, fallback to default documentation from extension folder.
+    // If no markdown file is found, display a fallback message.
     if (!markdownContent) {
-      const defaultDocPath = path.join(this.context.extensionPath, "DOCUMENTATION.md");
-      if (fs.existsSync(defaultDocPath)) {
-        markdownContent = fs.readFileSync(defaultDocPath, "utf8");
-      } else {
-        markdownContent = `
-# PS8 Documentation
+      markdownContent = `
+# No Documentation Found
 
-Welcome to the **PS8 Project Development & Assistance Platform**.
-
-## Key Features
-
-- **SRS-to-Code Mapping:** Automatically links SRS requirements with code.
-- **Intelligent Navigation:** Explore your project via a custom file explorer.
-- **Guided Onboarding:** Start guided tours with CodeTour.
-- **AI-powered Insights:** Trigger AI insights via your cline extension.
-- **Dependency Visualization:** Graphically view module dependencies.
-        `;
-      }
+Please add a markdown (.md) file to the workspace to be displayed as documentation.
+      `;
     }
     const md = new MarkdownIt();
     const htmlFromMd = md.render(markdownContent);
