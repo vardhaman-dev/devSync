@@ -1,41 +1,94 @@
 {
   "name": "my-integrated-extension",
-  "displayName": "SE Extension",
-  "description": "Integrated extension enhancing project understanding, SRS mapping, onboarding, and more.",
-  "version": "0.0.1",
+  "displayName": "My Integrated Extension",
+  "description": "Integrated extension enhancing software development: SRS-to-Code Mapping, Intelligent Navigation, Guided Onboarding, AI Insights, and Dependency Visualization.",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.98.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Programming Languages",
+    "Linters"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:my-integrated-extension.helloWorld",
+    "onCommand:my-integrated-extension.fetchGitHubRepo",
+    "onCommand:my-integrated-extension.startCodeTour",
+    "onCommand:my-integrated-extension.openDocs",
+    "onCommand:my-integrated-extension.mapSRS",
+    "onCommand:my-integrated-extension.aiInsights",
+    "onCommand:my-integrated-extension.refreshProjectNavigator",
+    "onCommand:my-integrated-extension.showDependencies",
+    "onView:projectNavigator"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "my-integrated-extension.helloWorld",
-        "title": "Hello World"
+        "title": "Say Hello (PS8)"
+      },
+      {
+        "command": "my-integrated-extension.fetchGitHubRepo",
+        "title": "Fetch GitHub Repository Files"
+      },
+      {
+        "command": "my-integrated-extension.startCodeTour",
+        "title": "Start Code Tour"
+      },
+      {
+        "command": "my-integrated-extension.openDocs",
+        "title": "Open Documentation"
+      },
+      {
+        "command": "my-integrated-extension.mapSRS",
+        "title": "Map SRS to Code"
+      },
+      {
+        "command": "my-integrated-extension.aiInsights",
+        "title": "AI-powered Insights"
+      },
+      {
+        "command": "my-integrated-extension.refreshProjectNavigator",
+        "title": "Refresh Project Navigator"
+      },
+      {
+        "command": "my-integrated-extension.showDependencies",
+        "title": "Show Dependency Visualization"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "projectNavigator",
+          "name": "Project Navigator"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "watch": "tsc --watch -p ./",
     "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "lint": "eslint src --ext .ts",
+    "test": "vscode-test",
+    "prepublishOnly": "npm run compile"
   },
   "devDependencies": {
-    "@types/vscode": "^1.98.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
     "@typescript-eslint/eslint-plugin": "^8.25.0",
     "@typescript-eslint/parser": "^8.25.0",
-    "eslint": "^9.21.0",
-    "typescript": "^5.7.3",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.21.0",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@octokit/rest": "^18.12.0",
+    "markdown-it": "^13.0.1"
   }
 }
