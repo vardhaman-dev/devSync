@@ -118,3 +118,4 @@ export function activateAutoDocUpdater(context: vscode.ExtensionContext): AutoDo
     return null as any;
   }
 }
+    

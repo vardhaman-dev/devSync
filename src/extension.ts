@@ -7,7 +7,7 @@ import { CodeTourManager } from "./codeTourManager";
 import { DependencyVisualizer } from "./dependencyVisualizer";
 import { CustomExplorerPanel } from "./customExplorer";
 import { showContextualSearchResults } from "./contextualSearch";
-import { activateAutoDocUpdater } from "./autoDocUpdater"; 
+import { activateAutoDocUpdater } from "./autoDocUpdater";
 
 export function activate(context: vscode.ExtensionContext) {
   // Initialize services
@@ -16,7 +16,7 @@ export function activate(context: vscode.ExtensionContext) {
   const codeTourManager = new CodeTourManager();
   const depVisualizer = new DependencyVisualizer(context);
   const customExplorer = new CustomExplorerPanel(context);
-  const autoDocUpdater = activateAutoDocUpdater(context); 
+  const autoDocUpdater = activateAutoDocUpdater(context);
 
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   if (workspaceRoot) {
@@ -84,75 +84,9 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Command: Map SRS to Code
-  context.subscriptions.push(
-    vscode.commands.registerCommand("my-integrated-extension.mapSRS", async () => {
-      const workspaceRoot = vscode.workspace.rootPath;
-      if (!workspaceRoot) {
-        vscode.window.showErrorMessage("No workspace is open.");
-        return;
-      }
-      const srsPath = vscode.Uri.file(path.join(workspaceRoot, "srs.md"));
-      try {
-        const srsContent = await vscode.workspace.fs.readFile(srsPath);
-        const contentStr = Buffer.from(srsContent).toString("utf8");
-        const srsRegex = /(SRS-\d{3,})/g;
-        const matches = contentStr.match(srsRegex);
-        if (!matches) {
-          vscode.window.showInformationMessage("No SRS IDs found in the SRS file.");
-          return;
-        }
-        const srsIDs = Array.from(new Set(matches));
-        const mapping: { [id: string]: string[] } = {};
-        for (const id of srsIDs) {
-          mapping[id] = [];
-          const files = await vscode.workspace.findFiles("src/**/*.{ts,tsx,js,jsx}", "**/node_modules/**");
-          for (const file of files) {
-            const fileContent = Buffer.from(await vscode.workspace.fs.readFile(file)).toString("utf8");
-            if (fileContent.includes(id)) {
-              mapping[id].push(file.fsPath);
-            }
-          }
-        }
-        let mappingText = "";
-        for (const id of Object.keys(mapping)) {
-          mappingText += `${id} found in:\n${mapping[id].map(f => `  ${f}`).join("\n")}\n\n`;
-        }
-        if (!mappingText) {
-          mappingText = "No mappings found.";
-        }
-        const outputChannel = vscode.window.createOutputChannel("SRS Mapping");
-        outputChannel.show();
-        outputChannel.appendLine(mappingText);
-      } catch (err: any) {
-        vscode.window.showErrorMessage("Error reading SRS file: " + err.message);
-      }
-    })
-  );
-
-  // Command: AI-powered Insights using cline extension
-  context.subscriptions.push(
-    vscode.commands.registerCommand("my-integrated-extension.aiInsights", async () => {
-      const aiExtension = vscode.extensions.getExtension("saoudrizwan.claude-dev");
-      if (!aiExtension) {
-        vscode.window.showErrorMessage("AI Insights extension (cline) is not installed.");
-        return;
-      }
-      if (!aiExtension.isActive) {
-        await aiExtension.activate();
-      }
-      try {
-        await vscode.commands.executeCommand("saoudrizwan.claude-dev.run");
-      } catch (error: any) {
-        vscode.window.showErrorMessage("Failed to trigger AI Insights: " + error.message);
-      }
-    })
-  );
-
   // Command: Show Dependency Visualization
   context.subscriptions.push(
     vscode.commands.registerCommand("my-integrated-extension.showDependencies", async () => {
-      const depVisualizer = new DependencyVisualizer(context);
       depVisualizer.show();
     })
   );
@@ -160,12 +94,11 @@ export function activate(context: vscode.ExtensionContext) {
   // Command: Open Custom Explorer
   context.subscriptions.push(
     vscode.commands.registerCommand("my-integrated-extension.openCustomExplorer", async () => {
-      const customExplorer = new CustomExplorerPanel(context);
       await customExplorer.show();
     })
   );
 
-  // Command: Contextual Code Search (Semantic Search)
+  // Command: Contextual Code Search
   context.subscriptions.push(
     vscode.commands.registerCommand("my-integrated-extension.contextualSearch", async () => {
       await showContextualSearchResults();
@@ -178,6 +111,75 @@ export function activate(context: vscode.ExtensionContext) {
       await autoDocUpdater.updateDocumentation();
     })
   );
+
+  // ✅ Command: AI Insights via Tabnine
+  context.subscriptions.push(
+    vscode.commands.registerCommand("my-integrated-extension.aiInsights", async () => {
+      try {
+        const tabnineExt = vscode.extensions.getExtension("TabNine.tabnine-vscode");
+        if (!tabnineExt) {
+          vscode.window.showErrorMessage("❌ Tabnine extension is NOT installed.");
+          return;
+        }
+
+        if (!tabnineExt.isActive) {
+          await tabnineExt.activate();
+        }
+
+        // Wait for the extension to fully activate
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+          vscode.window.showErrorMessage("❌ No active editor found.");
+          return;
+        }
+
+        // Trigger AI-based code suggestions
+        await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
+
+        vscode.window.showInformationMessage("🔹 Tabnine AI Insights Activated!");
+      } catch (error: any) {
+        vscode.window.showErrorMessage(`❌ An error occurred: ${error.message}`);
+      }
+    })
+  );
+
+  // ✅ Auto-Prompting with Tabnine: Insert Prompt into Tabnine
+  const autoPrompt = vscode.workspace.onDidSaveTextDocument(async (document) => {
+    const tabnineExt = vscode.extensions.getExtension("TabNine.tabnine-vscode");
+
+    if (!tabnineExt || !tabnineExt.isActive) {
+      vscode.window.showErrorMessage("❌ Tabnine is not installed or activated.");
+      return;
+    }
+
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage("❌ No active editor found.");
+      return;
+    }
+
+    const fileName = document.fileName;
+    const prompt = `/* 
+      AUTO-GENERATED INSIGHTS REQUEST:  
+      - What improvements can be made to ${path.basename(fileName)}?  
+      - Identify any potential errors.  
+      - Suggest additional features that could enhance functionality.  
+    */\n\n`;
+
+    // Insert the prompt at the beginning of the file (as a comment)
+    await editor.edit((editBuilder) => {
+      editBuilder.insert(new vscode.Position(0, 0), prompt);
+    });
+
+    // Trigger AI Suggestions
+    await vscode.commands.executeCommand("editor.action.inlineSuggest.trigger");
+
+    vscode.window.showInformationMessage(`💡 Tabnine is analyzing ${fileName} for insights!`);
+  });
+
+  context.subscriptions.push(autoPrompt);
 }
 
 export function deactivate() {}
