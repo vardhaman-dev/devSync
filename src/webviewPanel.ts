@@ -5,13 +5,13 @@ import MarkdownIt from "markdown-it";
 
 export class DocumentationPanel {
   private panel: vscode.WebviewPanel | undefined;
+  private mdWatcher: vscode.FileSystemWatcher | undefined;
+  private currentDocPath: string | undefined;
 
   constructor(private context: vscode.ExtensionContext) {}
 
   async show() {
-    if (this.panel) {
-      this.panel.reveal(vscode.ViewColumn.One);
-    } else {
+    if (!this.panel) {
       this.panel = vscode.window.createWebviewPanel(
         "ps8Docs",
         "PS8 Documentation",
@@ -20,40 +20,54 @@ export class DocumentationPanel {
       );
       this.panel.onDidDispose(() => {
         this.panel = undefined;
+        if (this.mdWatcher) {
+          this.mdWatcher.dispose();
+          this.mdWatcher = undefined;
+        }
       });
+      // Watch for markdown changes in the workspace
+      this.startWatcher();
+    }
+    // Update content on show
+    this.panel.webview.html = await this.getWebviewContent();
+    this.panel.reveal(vscode.ViewColumn.One);
+  }
+
+  private startWatcher() {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders || workspaceFolders.length === 0) {
+      return;
+    }
+    // Watch any markdown file changes in the workspace
+    const pattern = new vscode.RelativePattern(workspaceFolders[0], "**/*.md");
+    this.mdWatcher = vscode.workspace.createFileSystemWatcher(pattern);
+    this.mdWatcher.onDidChange(() => this.refreshContent());
+    this.mdWatcher.onDidCreate(() => this.refreshContent());
+    this.mdWatcher.onDidDelete(() => this.refreshContent());
+  }
+
+  private async refreshContent() {
+    if (this.panel) {
       this.panel.webview.html = await this.getWebviewContent();
     }
   }
 
   private async getWebviewContent(): Promise<string> {
     let markdownContent = "";
-    // Search recursively for any .md file in the workspace folder
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (workspaceFolders && workspaceFolders.length > 0) {
-      // Use a recursive search pattern to catch all .md files in the workspace
-      const files = await vscode.workspace.findFiles("**/*.md", "**/node_modules/**", 10);
-      if (files.length === 1) {
-        markdownContent = fs.readFileSync(files[0].fsPath, "utf8");
-      } else if (files.length > 1) {
-        // If multiple markdown files are found, prompt the user to select one.
-        const fileNames = files.map(f => path.basename(f.fsPath));
-        const selectedFile = await vscode.window.showQuickPick(fileNames, {
-          placeHolder: "Select a markdown file to display as documentation"
-        });
-        if (selectedFile) {
-          const selectedUri = files.find(f => path.basename(f.fsPath) === selectedFile);
-          if (selectedUri) {
-            markdownContent = fs.readFileSync(selectedUri.fsPath, "utf8");
-          }
-        }
+      // Try to find a markdown file. If multiple, pick the first one.
+      const files = await vscode.workspace.findFiles("**/*.md", "**/node_modules/**", 1);
+      if (files.length > 0) {
+        this.currentDocPath = files[0].fsPath;
+        markdownContent = fs.readFileSync(this.currentDocPath, "utf8");
       }
     }
-    // If no markdown file is found, display a fallback message.
     if (!markdownContent) {
       markdownContent = `
 # No Documentation Found
 
-Please add a markdown (.md) file to the workspace to be displayed as documentation.
+Please add a markdown (.md) file to the workspace.
       `;
     }
     const md = new MarkdownIt();

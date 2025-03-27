@@ -5,6 +5,7 @@ import { DocumentationPanel } from "./webviewPanel";
 import { GitHubService } from "./githubService";
 import { CodeTourManager } from "./codeTourManager";
 import { DependencyVisualizer } from "./dependencyVisualizer";
+import { CustomExplorerPanel } from "./customExplorer";
 
 export function activate(context: vscode.ExtensionContext) {
   // Initialize services
@@ -12,8 +13,9 @@ export function activate(context: vscode.ExtensionContext) {
   const githubService = new GitHubService();
   const codeTourManager = new CodeTourManager();
   const depVisualizer = new DependencyVisualizer(context);
+  const customExplorer = new CustomExplorerPanel(context);
 
-  // Register the Project Navigator tree view
+  // Register the Project Navigator tree view (old one)
   const workspaceRoot = vscode.workspace.rootPath;
   if (workspaceRoot) {
     const treeProvider = new FileExplorerProvider(workspaceRoot);
@@ -48,23 +50,18 @@ export function activate(context: vscode.ExtensionContext) {
         return;
       }
       const [owner, repo] = parts;
-      // First, fetch the repository details.
       await githubService.fetchRepo(owner, repo);
-      // Then, ask if user wants to clone & open the repo.
       const cloneChoice = await vscode.window.showQuickPick(["Yes", "No"], {
-        placeHolder: "Do you want to clone and open this repository for editing?"
+        placeHolder: "Clone and open this repository for editing?"
       });
       if (cloneChoice === "Yes") {
-        // Ask for target directory to clone into
         const folderUri = await vscode.window.showOpenDialog({
           canSelectFolders: true,
-          openLabel: "Select Folder to Clone Repository Into"
+          openLabel: "Select Folder to Clone Into"
         });
-        if (!folderUri || folderUri.length === 0) {
-          vscode.window.showErrorMessage("No folder selected.");
-          return;
+        if (folderUri && folderUri.length > 0) {
+          await githubService.cloneRepo(owner, repo, folderUri[0].fsPath);
         }
-        await githubService.cloneRepo(owner, repo, folderUri[0].fsPath);
       }
     })
   );
@@ -141,7 +138,6 @@ export function activate(context: vscode.ExtensionContext) {
         await aiExtension.activate();
       }
       try {
-        // Assumes the cline extension exposes a command "saoudrizwan.claude-dev.run"
         await vscode.commands.executeCommand("saoudrizwan.claude-dev.run");
       } catch (error: any) {
         vscode.window.showErrorMessage("Failed to trigger AI Insights: " + error.message);
@@ -153,6 +149,13 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("my-integrated-extension.showDependencies", async () => {
       depVisualizer.show();
+    })
+  );
+
+  // Command: Open Custom Interactive Explorer
+  context.subscriptions.push(
+    vscode.commands.registerCommand("my-integrated-extension.openCustomExplorer", async () => {
+      await customExplorer.show();
     })
   );
 }

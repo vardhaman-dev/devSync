@@ -20,6 +20,7 @@
     "onCommand:my-integrated-extension.aiInsights",
     "onCommand:my-integrated-extension.refreshProjectNavigator",
     "onCommand:my-integrated-extension.showDependencies",
+    "onCommand:my-integrated-extension.openCustomExplorer",
     "onView:projectNavigator"
   ],
   "main": "./out/extension.js",
@@ -56,6 +57,10 @@
       {
         "command": "my-integrated-extension.showDependencies",
         "title": "Show Dependency Visualization"
+      },
+      {
+        "command": "my-integrated-extension.openCustomExplorer",
+        "title": "Open Custom Explorer"
       }
     ],
     "views": {

@@ -33,9 +33,11 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileItem> {
     return files.map(fileName => {
       const filePath = path.join(dir, fileName);
       const stats = fs.statSync(filePath);
+      const icon = stats.isDirectory() ? new vscode.ThemeIcon("folder") : new vscode.ThemeIcon("file");
       const fileItem = new FileItem(
         vscode.Uri.file(filePath),
-        stats.isDirectory() ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
+        stats.isDirectory() ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
+        icon
       );
       fileItem.contextValue = stats.isDirectory() ? "folder" : "file";
       return fileItem;
@@ -46,10 +48,14 @@ export class FileExplorerProvider implements vscode.TreeDataProvider<FileItem> {
 export class FileItem extends vscode.TreeItem {
   constructor(
     public readonly resourceUri: vscode.Uri,
-    public readonly collapsibleState: vscode.TreeItemCollapsibleState
+    public readonly collapsibleState: vscode.TreeItemCollapsibleState,
+    icon?: vscode.ThemeIcon
   ) {
     super(resourceUri, collapsibleState);
-    this.tooltip = this.resourceUri.fsPath;
-    this.description = this.resourceUri.fsPath;
+    this.tooltip = resourceUri.fsPath;
+    this.description = resourceUri.fsPath;
+    if (icon) {
+      this.iconPath = icon;
+    }
   }
 }
