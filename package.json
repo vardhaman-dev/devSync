@@ -21,6 +21,8 @@
     "onCommand:my-integrated-extension.refreshProjectNavigator",
     "onCommand:my-integrated-extension.showDependencies",
     "onCommand:my-integrated-extension.openCustomExplorer",
+    "onCommand:my-integrated-extension.contextualSearch",
+    "onCommand:my-integrated-extension.updateDocs", 
     "onView:projectNavigator"
   ],
   "main": "./out/extension.js",
@@ -61,6 +63,14 @@
       {
         "command": "my-integrated-extension.openCustomExplorer",
         "title": "Open Custom Explorer"
+      },
+      {
+        "command": "my-integrated-extension.contextualSearch",
+        "title": "Contextual Code Search"
+      },
+      {
+        "command": "my-integrated-extension.updateDocs", 
+        "title": "Update Documentation"
       }
     ],
     "views": {
@@ -94,6 +104,10 @@
   },
   "dependencies": {
     "@octokit/rest": "^18.12.0",
-    "markdown-it": "^13.0.1"
+    "dotenv": "^16.4.7",
+    "fuse.js": "^6.6.2",
+    "lunr": "^2.3.9",
+    "markdown-it": "^13.0.1",
+    "openai": "^4.89.1"
   }
 }

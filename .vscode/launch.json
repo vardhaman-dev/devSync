@@ -9,6 +9,9 @@
 		"args": [
 		  "--extensionDevelopmentPath=${workspaceFolder}"
 		],
+		"env": {
+		  "OPENAI_API_KEY": "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"
+		},
 		"outFiles": [
 		  "${workspaceFolder}/out/**/*.js"
 		],

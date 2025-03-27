@@ -6,6 +6,8 @@ import { GitHubService } from "./githubService";
 import { CodeTourManager } from "./codeTourManager";
 import { DependencyVisualizer } from "./dependencyVisualizer";
 import { CustomExplorerPanel } from "./customExplorer";
+import { showContextualSearchResults } from "./contextualSearch";
+import { activateAutoDocUpdater } from "./autoDocUpdater"; 
 
 export function activate(context: vscode.ExtensionContext) {
   // Initialize services
@@ -14,9 +16,9 @@ export function activate(context: vscode.ExtensionContext) {
   const codeTourManager = new CodeTourManager();
   const depVisualizer = new DependencyVisualizer(context);
   const customExplorer = new CustomExplorerPanel(context);
+  const autoDocUpdater = activateAutoDocUpdater(context); 
 
-  // Register the Project Navigator tree view (old one)
-  const workspaceRoot = vscode.workspace.rootPath;
+  const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   if (workspaceRoot) {
     const treeProvider = new FileExplorerProvider(workspaceRoot);
     vscode.window.registerTreeDataProvider("projectNavigator", treeProvider);
@@ -25,6 +27,8 @@ export function activate(context: vscode.ExtensionContext) {
         treeProvider.refresh();
       })
     );
+  } else {
+    vscode.window.showErrorMessage("No workspace is open.");
   }
 
   // Command: Say Hello
@@ -148,14 +152,30 @@ export function activate(context: vscode.ExtensionContext) {
   // Command: Show Dependency Visualization
   context.subscriptions.push(
     vscode.commands.registerCommand("my-integrated-extension.showDependencies", async () => {
+      const depVisualizer = new DependencyVisualizer(context);
       depVisualizer.show();
     })
   );
 
-  // Command: Open Custom Interactive Explorer
+  // Command: Open Custom Explorer
   context.subscriptions.push(
     vscode.commands.registerCommand("my-integrated-extension.openCustomExplorer", async () => {
+      const customExplorer = new CustomExplorerPanel(context);
       await customExplorer.show();
+    })
+  );
+
+  // Command: Contextual Code Search (Semantic Search)
+  context.subscriptions.push(
+    vscode.commands.registerCommand("my-integrated-extension.contextualSearch", async () => {
+      await showContextualSearchResults();
+    })
+  );
+
+  // Command: Update Documentation
+  context.subscriptions.push(
+    vscode.commands.registerCommand("my-integrated-extension.updateDocs", async () => {
+      await autoDocUpdater.updateDocumentation();
     })
   );
 }
