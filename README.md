@@ -1,71 +1,110 @@
-# my-integrated-extension README
+# 🚀 RETROTHON-020
+# 📌 Project Name: DevSync Extension (PS8: Project Development and Assistance Platform)
 
-This is the README for your extension "my-integrated-extension". After writing up a brief description, we recommend including the following sections.
+## 🎭 1. Team Name
+## Team Illusion
 
-## Features
+## 👥 2. Team Members
+| 🏷 Name | 📞 Contact Number | 📧 Email |
+|------|---------------|-------|
+| Vrashab Timmannavar | 📱 9422642149 | 📩 vrashab.dev@gmail.com |
+| Vardhaman Ganpule | 📱 91684 36525 | 📩 vardhaman.ganpule@gmail.com |
+| Ishan Parab | 📱 74990 14563 | 📩 ishanparab@yahoo.com |
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## 🔍 Overview
 
-For example if there is an image subfolder under your extension project workspace:
+DevSync is a 🛠 Visual Studio Code extension designed to automate project understanding by mapping 📜 Software Requirement Specifications (SRS) to code, providing 📖 interactive documentation, and assisting developers with 🏗 guided onboarding. This extension enhances the development experience by offering 🧭 intelligent project navigation, 🤖 AI-powered search, and 🔄 real-time documentation updates.
 
-\!\[feature X\]\(images/feature-x.png\)
+## 👤 3. Individual Contributions
+- **Vrashab Timmannavar**: 🤖 AI Integration and 📜 Interactive Documentation Generation
+- **Vardhaman Ganpule**: 🔗 GitHub Integration, 🗺 SRS-to-Code Mapping, 👨‍🏫 Guided Onboarding for Developers
+- **Ishan Parab**: 🔍 Dependency & 🎨 Architecture Visualization
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## 📂 4. File/Folder Structure
+```
+ps8-extension/
+├── .vscode/                     # ⚙️ VS Code specific settings
+├── src/                         # 📦 Source files
+│   ├── autoDocUpdater.ts        # 🔄 AutoDocUpdater class for documentation management
+│   ├── codeTourManager.ts       # 🏗 Code tour management functionality
+│   ├── contextualSearch.ts      # 🔍 Contextual search functionality
+│   ├── customExplorer.ts        # 🗂 Custom explorer panel
+│   ├── dependencyVisualizer.ts  # 🎨 Dependency visualization logic
+│   ├── extension.ts             # 🎯 Main entry point for the extension
+│   ├── githubService.ts         # 🔗 GitHub integration service
+│   ├── treeViewProvider.ts      # 🌲 File explorer tree view provider
+│   ├── webviewPanel.ts          # 🖥 Webview panel for displaying documentation
+├── package.json                 # 📜 Extension metadata and dependencies
+├── tsconfig.json                # ⚙️ TypeScript configuration
+├── README.md                    # 📖 Project documentation
+└── LICENSE                      # 📝 License information
+```
 
-## Requirements
+## 📑 5. File Descriptions
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+- **.vscode/**: ⚙️ Contains settings specific to Visual Studio Code.
+- **src/**: 📂 The main directory containing all source files.
+  - **autoDocUpdater.ts**: 🔄 Manages automatic updates to documentation.
+  - **codeTourManager.ts**: 🏗 Facilitates interactive tours for onboarding developers.
+  - **contextualSearch.ts**: 🔍 Implements contextual search.
+  - **customExplorer.ts**: 🗂 Defines a custom file explorer panel.
+  - **dependencyVisualizer.ts**: 🎨 Provides tools for visualizing dependencies.
+  - **extension.ts**: 🎯 Main entry point for the extension.
+  - **githubService.ts**: 🔗 Handles GitHub integration.
+  - **treeViewProvider.ts**: 🌲 Implements a tree view for project navigation.
+  - **webviewPanel.ts**: 🖥 Manages a webview panel for interactive documentation.
+- **package.json**: 📜 Contains metadata about the extension.
+- **tsconfig.json**: ⚙️ TypeScript configuration file.
+- **README.md**: 📖 Project documentation.
+- **LICENSE**: 📝 Specifies the project's licensing terms.
 
-## Extension Settings
+## 🛠 6. Approach to Solve the Problem
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Initially, we considered developing a 🌐 web-based solution. However, after evaluating the challenges developers face while navigating repositories, we decided to build a 🏗 VS Code extension for a more seamless and integrated experience.
 
-For example:
+### 🎯 Solution Highlights:
+- **📜 SRS-to-Code Mapping**: Automatically link SRS requirements to relevant code sections.
+- **🧭 Intelligent Navigation**: Provide structured insights into project architecture.
+- **📖 Interactive Documentation**: Dynamically update documentation based on commits.
+- **👨‍🏫 Guided Onboarding**: Step-by-step breakdown of project components.
+- **🔍 AI-powered Search**: Contextual search to locate relevant code snippets.
+- **🔗 GitHub Integration**: Sync repositories for real-time tracking.
+- **🎨 Dependency Visualization**: Graphical representation of module interactions.
 
-This extension contributes the following settings:
+By embedding these features directly within VS Code, we ensure developers can 🏗 understand, explore, and contribute to projects efficiently without leaving their IDE.
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## 🏗 7. Tech Stack
 
-## Known Issues
+### 1️⃣ Core Development
+- **🖥 Language**: TypeScript (for VS Code extension development)
+- **🚀 Framework**: Node.js (for backend services)
+- **🛠 VS Code API**: To interact with the editor and provide UI elements
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+### 2️⃣ GitHub Integration
+- **🔗 GitHub REST API**: Fetch repositories, commits, and pull requests
+- **🔍 GitHub GraphQL API**: Query structured repository data efficiently
 
-## Release Notes
+### 3️⃣ SRS-to-Code Mapping & Search
+- **🧠 LangChain.js / OpenAI API**: AI-powered code understanding and feature mapping
+- **🔍 AST Parsing (Abstract Syntax Trees)**: To analyze code structure and match SRS requirements
 
-Users appreciate release notes as you update your extension.
+### 4️⃣ Interactive Documentation
+- **📜 Markdown & Docusaurus**: Generate and manage documentation dynamically
+- **🖥 VS Code Webview API**: Display interactive documentation inside VS Code
 
-### 1.0.0
+### 5️⃣ Dependency & Architecture Visualization
+- **📊 Graphviz / D3.js**: For visualizing project structure and dependencies
+- **🔍 AST-based Analysis**: To map function and module interactions
 
-Initial release of ...
+## 🚀 Key Features
 
-### 1.0.1
+- **📜 SRS-to-Code Mapping**: Automatically analyze SRS documents and link them to relevant code sections.
+- **🧭 Intelligent Project Navigation**: Auto-generate a project explorer that maps dependencies.
+- **📖 Auto-Generated Documentation**: Real-time documentation updates based on code changes.
+- **👨‍🏫 Guided Onboarding**: Interactive onboarding for new developers.
+- **🔍 AI-Powered Search & Contextual Assistance**: Use AI to provide context-aware suggestions.
+- **🔗 GitHub Integration**: Fetch project repositories and auto-synchronize documentation.
+- **🎨 Dependency & Visualization Tools**: Provide real-time dependency graphs.
 
-Fixed issue #.
+**Video Link**:[https://drive.google.com/drive/folders/13zUXEFIw_n99TtlrQAuZZdpFtgOnzIHw?usp=drive_link]
 
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
